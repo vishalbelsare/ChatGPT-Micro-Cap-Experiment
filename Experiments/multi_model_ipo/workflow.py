@@ -17,6 +17,7 @@ def weekly_flow(date):
         libb.reset_run(auto_ensure=True)
         libb.process_portfolio()
         deep_research_report, prompt = prompt_deep_research(libb)
+        libb.save_prompt(prompt)
         libb.save_deep_research(deep_research_report)
 
         orders_json = parse_json(deep_research_report, "ORDERS_JSON")
@@ -34,6 +35,7 @@ def daily_flow(date):
         libb = LIBBmodel(f"Experiments/multi_model_ipo/artifacts/{model}", run_date=date)
         libb.process_portfolio()
         daily_report, prompt = prompt_daily_report(libb)
+        libb.save_prompt(prompt)
         libb.analyze_sentiment(daily_report)
         libb.save_daily_update(daily_report)
 
