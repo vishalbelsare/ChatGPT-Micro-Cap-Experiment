@@ -49,7 +49,9 @@ def _get_rejection_reasons(ticker: str, market_cap: float) -> list[str]:
     return reasons  # empty → passes all checks; non-empty → one or more failures
 
 
-def filter_orders(orders: list[dict]) -> tuple[list[dict], list[dict] | None]:
+def filter_orders(orders: list[str, dict]) -> tuple[list[dict], list[dict] | None]:
+
+    orders = orders.get("orders", [])
 
     rejected_orders: list[dict] = []
     filtered_orders: list[dict] = []
@@ -57,7 +59,7 @@ def filter_orders(orders: list[dict]) -> tuple[list[dict], list[dict] | None]:
     for order in orders:
         order_type = order.get("order_type", "NULL")
         action = order.get("action", "NULL")
-        ticker = order["ticker"]
+        ticker = order.get("ticker", "NULL")
         date = datetime.date.fromisoformat(order["date"])
 
         if action != "b":
