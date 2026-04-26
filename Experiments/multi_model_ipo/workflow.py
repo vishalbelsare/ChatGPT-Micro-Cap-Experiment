@@ -5,6 +5,11 @@ from Experiments.multi_model_ipo.miscellaneous.csv_conversion import *
 from libb.other.parse import parse_json
 import pandas as pd
 
+# TODO: yfinance network failures in codespace environment causing IPO date + shares outstanding lookups to fail
+# TODO: Polygon fallback also failing for very recent IPOs (PAYP, MMED, NHP) — tickers not resolving
+# TODO: LIMIT orders missing limit_price from model output causing market_cap = 0, triggering false rejections
+# TODO: filter_orders incorrectly rejecting BUY_ALLOWED tickers due to above lookup failures
+
 MODELS = ["deepseek", "gpt-4.1"]
 
 TODAY = pd.Timestamp.now().date()
@@ -14,7 +19,6 @@ def weekly_flow(date):
 
     for model in MODELS:
         libb = LIBBmodel(f"Experiments/multi_model_ipo/artifacts/{model}", run_date=date)
-        libb.reset_run(auto_ensure=True)
         libb.process_portfolio()
         deep_research_report, prompt = prompt_deep_research(libb)
         libb.save_prompt(prompt)
@@ -48,6 +52,7 @@ def daily_flow(date):
         libb.save_orders(filtered_orders)
     return
 
+"""
 def main():
     day_num = TODAY.weekday()
 
@@ -58,7 +63,24 @@ def main():
         print("Regular Weekday: Running Daily Flow...")
         daily_flow(TODAY) # Mon-Thursday (Non trading days will be logged)
     print("Success!")
+    """
 
+def main():
+    # TODO: REPLACE FILLER DATE IN PROMPTS
+    start_date = pd.Timestamp("2026-01-28")
+    for i in range(20):
+        run_date = start_date + pd.Timedelta(days=i)    
+        day_num = run_date.weekday()
+
+        if day_num  == 4: # Friday
+            print("Friday: Running Weekly Flow...")
+            weekly_flow(run_date)
+        elif day_num < 4:
+            print("Regular Weekday: Running Daily Flow...")
+            daily_flow(run_date) # Mon-Thursday
+        else:  # Weekend (optional, LIBB will automatically skip weekends)
+            print("Weekend: Skipping...")
+        print("Success!")
 
 if __name__ == "__main__":
     main()
