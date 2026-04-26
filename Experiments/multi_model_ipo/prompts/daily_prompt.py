@@ -294,19 +294,12 @@ def create_daily_prompt(libb: LIBBmodel):
     today = libb.run_date
 
     macro_news = get_macro_news()
-
     portfolio_state = libb.portfolio
     portfolio_eligibility = build_eligibility_series(portfolio_state["ticker"])
     execution_log = libb.recent_execution_logs()
 
     if execution_log.empty:
         execution_log = "No recent trade logs."
-
-    # Normalize IPO universe formatting (prevents model confusion)
-    if hasattr(ipo_universe, "to_string"):
-        ipo_universe = ipo_universe.to_string(index=False)
-    else:
-        ipo_universe = str(ipo_universe)
 
     prompt = (
         SYSTEM_HEADER.format(today=today)
