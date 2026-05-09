@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..prompt_orchestration.get_prompt_data import get_macro_news, get_ipo_universe, format_universe_for_prompt, build_eligibility_series
+from ..prompt_orchestration.get_prompt_data import *
 from libb.model import LIBBmodel
 
 
@@ -286,8 +286,7 @@ def create_deep_research_prompt(libb: LIBBmodel):
     ipo_universe = get_ipo_universe()
     formatted_ipo_universe = format_universe_for_prompt(ipo_universe)
 
-    ipo_tickers = pd.Series([c["ticker"] for c in ipo_universe])
-    ipo_universe_eligibility = build_eligibility_series(ipo_tickers)
+    ipo_universe_eligibility = build_eligibility_series_from_universe(ipo_universe)
 
     portfolio_state = libb.portfolio
     portfolio_tickers_eligibility = build_eligibility_series(portfolio_state["ticker"])

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..prompt_orchestration.get_prompt_data import get_macro_news, get_ipo_universe, build_eligibility_series, format_universe_for_prompt
+from ..prompt_orchestration.get_prompt_data import *
 from libb.model import LIBBmodel
 
 
@@ -267,9 +267,8 @@ def create_starting_prompt(libb: LIBBmodel):
    macro_news = get_macro_news()
 
    ipo_universe = get_ipo_universe(max_results=15)
+   ipo_universe_eligibility = build_eligibility_series_from_universe(ipo_universe)
    ipo_universe_string = format_universe_for_prompt(ipo_universe)
-   ipo_tickers = pd.Series([c["ticker"] for c in ipo_universe])
-   ipo_universe_eligibility = build_eligibility_series(ipo_tickers)
 
    prompt = (
         SYSTEM_HEADER.format(today=today)
