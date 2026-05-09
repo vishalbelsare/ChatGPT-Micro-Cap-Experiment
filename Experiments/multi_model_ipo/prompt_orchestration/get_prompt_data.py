@@ -469,6 +469,45 @@ def build_eligibility_series(
         )
 
     return "\n".join(lines)
+def build_eligibility_series_from_universe(companies: list[dict], today: date | None = None, max_years: int = 3) -> str:
+    today = today or date.today()
+    max_days = max_years * 365
+    lines = []
+
+    for c in companies:
+        ticker = c.get("ticker", "")
+        mcap = c.get("market_cap")
+        listing_date = c.get("listing_date")
+
+        try:
+            if listing_date:
+                ipo_date = date.fromisoformat(listing_date)
+            else:
+                lines.append(f"{ticker} | UNKNOWN | UNKNOWN | UNKNOWN | BUY_BLOCKED")
+                continue
+            days_since = (today - ipo_date).days
+            remaining = max_days - days_since
+            ipo_eligible = remaining > 0
+            remaining_str = f"{remaining} DAYS LEFT" if remaining > 0 else f"{abs(remaining)} DAYS OVERDUE"
+        except Exception:
+            lines.append(f"{ticker} | UNKNOWN | UNKNOWN | UNKNOWN | BUY_BLOCKED")
+            continue
+
+        if isinstance(mcap, (int, float)):
+            mcap_eligible = mcap >= MIN_MARKET_CAP
+            mcap_str = f"{mcap/1e9:.2f}B"
+        else:
+            mcap_eligible = False
+            mcap_str = "UNKNOWN"
+
+        buy_allowed = ipo_eligible and mcap_eligible
+        lines.append(
+            f"{ticker} | {'ELIGIBLE' if ipo_eligible else 'INELIGIBLE'} | {remaining_str} | "
+            f"{'ELIGIBLE' if mcap_eligible else 'INELIGIBLE'} ({mcap_str}) | "
+            f"{'BUY_ALLOWED' if buy_allowed else 'BUY_BLOCKED'}"
+        )
+
+    return "\n".join(lines)
 
 # =========================================================
 # RUN
